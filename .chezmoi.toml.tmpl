@@ -4,13 +4,8 @@
 {{- end -}}
 {{- $gitName := promptStringOnce . "gitName" "Git author name" -}}
 {{- $gitEmail := promptStringOnce . "gitEmail" "Git author email" -}}
-{{- $gitSigningKey := "" -}}
-{{- if eq $profile "twinkl" -}}
-{{- $gitSigningKey = printf "%s/.ssh/id_ed25519.pub" .chezmoi.homeDir -}}
-{{- end -}}
 [data]
 profile = {{ $profile | quote }}
 gitName = {{ $gitName | quote }}
 gitEmail = {{ $gitEmail | quote }}
-gitSigningKey = {{ $gitSigningKey | quote }}
 godotPath = ""

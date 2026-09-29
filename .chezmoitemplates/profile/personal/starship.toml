@@ -1,0 +1,21 @@
+style = "#5c6370"
+
+[directory]
+style = "bold #61afef"
+
+[character]
+success_symbol = "[❯](bold #c678dd)"
+error_symbol = "[❯](bold #e06c75)"
+vimcmd_symbol = "[❮](bold #98c379)"
+
+[git_branch]
+format = "[$branch]($style) "
+style = "bold #5c6370"
+
+[git_status]
+format = "([$all_status$ahead_behind]($style) )"
+style = "bold #e06c75"
+
+[cmd_duration]
+format = "[$duration]($style) "
+style = "bold #e5c07b"

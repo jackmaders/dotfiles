@@ -14,7 +14,8 @@ run_once_after_*.sh.tmpl          # One-time setup after files and packages
 dot_zshenv.tmpl                  # XDG paths, ZDOTDIR, and selected profile
 dot_config/zsh/                  # Login and interactive Zsh startup files
 dot_config/git/config.tmpl       # Shared Git settings and profile identity
-dot_config/starship.toml.tmpl    # Personal or Twinkl prompt theme
+.chezmoitemplates/profile/       # Dynamically included personal/Twinkl settings
+dot_config/starship.toml.tmpl    # Shared prompt settings plus selected theme
 dot_config/zed/                  # Zed settings for the WSL-side Zed environment
 ```
 
@@ -55,9 +56,8 @@ chezmoi --source "$PWD" apply
 The apply step installs Ubuntu packages when the package list changes, creates
 `~/.ssh/id_ed25519` if it does not already exist, then sets Zsh as the user's
 login shell once. `ssh-keygen` asks for a passphrase; `sudo` is used for APT and
-`chsh`. Packages that are not in the configured Ubuntu repositories are
-skipped. Open a new WSL session after apply for the default shell change to
-take effect.
+`chsh`. APT or setup failures stop the apply instead of being skipped. Open a
+new WSL session after apply for the default shell change to take effect.
 
 To use the new SSH key with GitHub, run:
 
@@ -71,16 +71,21 @@ Follow the prompts to authenticate and upload the generated public key.
 
 The local file `~/.config/chezmoi/chezmoi.toml` contains `data.profile`,
 `data.gitName`, and `data.gitEmail`. Set `data.profile` to `personal` or
-`twinkl`; shared templates use that value for Git and Starship configuration.
-Git commit and tag signing are enabled only for the Twinkl profile, using the
-generated `~/.ssh/id_ed25519.pub` key. Personal profile commits are not signed.
+`twinkl`; templates dynamically include the matching files from
+`.chezmoitemplates/profile/` for Git, Starship, and profile-specific directory
+setup. Git commit and tag signing are enabled only for the Twinkl profile,
+using the generated `~/.ssh/id_ed25519.pub` key. Personal profile commits and
+tags are explicitly not signed.
 Keep private keys and other secrets outside this repository.
 
-The APT list contains shared shell and CLI dependencies. Applications that use
-vendor-specific installers (for example Bun, dust, fnm, pnpm, Obsidian, xh,
-vimgolf, Herdr, .NET/Godot, Antigravity CLI, AWS Vault, and Claude Code) need
-their Ubuntu installation source added separately before they can be
-automated here. `chezmoi apply` does not remove packages when a profile changes.
+The APT list contains shared shell and CLI dependencies. Interactive Zsh also
+requires `fnm`, which currently needs to be installed separately using its
+Ubuntu installation source. Missing required commands or shell integrations
+stop Zsh startup. Applications that use other vendor-specific installers
+(such as Bun, dust, pnpm, Obsidian, xh, vimgolf, Herdr, .NET/Godot,
+Antigravity CLI, AWS Vault, and Claude Code) still need their Ubuntu
+installation source added before they can be automated here. `chezmoi apply`
+does not remove packages when a profile changes.
 
 The config leaves WSLg-provided display and runtime variables to WSL instead of
 hard-coding the old NixOS values.

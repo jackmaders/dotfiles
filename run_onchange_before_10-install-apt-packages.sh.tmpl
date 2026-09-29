@@ -2,14 +2,14 @@
 set -euo pipefail
 
 if [[ ! -r /etc/os-release ]]; then
-  echo "Cannot detect operating system; skipping Ubuntu APT packages." >&2
-  exit 0
+  echo "Cannot detect operating system; cannot install the Ubuntu APT packages." >&2
+  exit 1
 fi
 
 . /etc/os-release
 if [[ "${ID:-}" != ubuntu ]]; then
-  echo "This package manifest targets Ubuntu (found ${ID:-unknown}); skipping." >&2
-  exit 0
+  echo "This package manifest targets Ubuntu (found ${ID:-unknown}); refusing to continue." >&2
+  exit 1
 fi
 
 packages=(
@@ -32,16 +32,4 @@ else
 fi
 
 "${apt_get[@]}" update
-
-available=()
-for package in "${packages[@]}"; do
-  if apt-cache show "$package" >/dev/null 2>&1; then
-    available+=("$package")
-  else
-    echo "Skipping unavailable Ubuntu package: $package" >&2
-  fi
-done
-
-if (( ${#available[@]} > 0 )); then
-  "${apt_get[@]}" install --yes --no-install-recommends "${available[@]}"
-fi
+"${apt_get[@]}" install --yes --no-install-recommends "${packages[@]}"

@@ -1,13 +1,70 @@
 # Interactive shell configuration.
 [[ -o interactive ]] || return
 
+require_command() {
+  local command_name="$1"
+  local install_hint="$2"
+
+  if (( ! $+commands[$command_name] )); then
+    print -u2 -- "Required command '$command_name' is missing; $install_hint."
+    return 1
+  fi
+}
+
+require_file() {
+  local file_path="$1"
+
+  if [[ ! -r "$file_path" ]]; then
+    print -u2 -- "Required shell integration is missing or unreadable: $file_path"
+    return 1
+  fi
+}
+
+require_command fnm "install fnm before starting Zsh" || return 1
+require_command direnv "install the Ubuntu package direnv" || return 1
+require_command zoxide "install the Ubuntu package zoxide" || return 1
+require_command starship "install the Ubuntu package starship" || return 1
+require_command clear "install the Ubuntu package ncurses-bin" || return 1
+require_command rg "install the Ubuntu package ripgrep" || return 1
+require_command eza "install the Ubuntu package eza" || return 1
+
+if (( ! $+commands[bat] && ! $+commands[batcat] )); then
+  print -u2 -- "Required command 'bat' or 'batcat' is missing; install the Ubuntu package bat."
+  return 1
+fi
+
+if (( ! $+commands[fd] && ! $+commands[fdfind] )); then
+  print -u2 -- "Required command 'fd' or 'fdfind' is missing; install the Ubuntu package fd-find."
+  return 1
+fi
+
+fzf_tab_plugin="$XDG_DATA_HOME/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
+zsh_autosuggestions=/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+fzf_key_bindings=/usr/share/doc/fzf/examples/key-bindings.zsh
+fzf_completion=/usr/share/doc/fzf/examples/completion.zsh
+zsh_syntax_highlighting=/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+require_file "$fzf_tab_plugin" || return 1
+require_file "$zsh_autosuggestions" || return 1
+require_file "$fzf_key_bindings" || return 1
+require_file "$fzf_completion" || return 1
+require_file "$zsh_syntax_highlighting" || return 1
+unfunction require_command require_file
+
 setopt interactivecomments
 
 # History lives in XDG data and is shared between interactive shells.
 HISTFILE="${XDG_DATA_HOME}/zsh/zsh_history"
 HISTSIZE=50000
 SAVEHIST=50000
-[[ -d "${HISTFILE:h}" ]] || command mkdir -p -- "${HISTFILE:h}"
+if [[ ! -d "${HISTFILE:h}" ]] && ! command mkdir -p -- "${HISTFILE:h}"; then
+  print -u2 -- "Cannot create Zsh history directory: ${HISTFILE:h}"
+  return 1
+fi
+if [[ ! -w "${HISTFILE:h}" ]]; then
+  print -u2 -- "Zsh history directory is not writable: ${HISTFILE:h}"
+  return 1
+fi
 setopt sharehistory hist_ignore_dups hist_ignore_space hist_expire_dups_first
 
 # Ctrl+Left / Ctrl+Right and history prefix search.
@@ -18,40 +75,54 @@ bindkey '^[OB' history-beginning-search-forward
 
 # Completion and its generated cache.
 typeset -g ZSH_CACHE_DIR="${XDG_CACHE_HOME}/zsh"
-[[ -d "$ZSH_CACHE_DIR" ]] || command mkdir -p -- "$ZSH_CACHE_DIR"
+if [[ ! -d "$ZSH_CACHE_DIR" ]] && ! command mkdir -p -- "$ZSH_CACHE_DIR"; then
+  print -u2 -- "Cannot create Zsh cache directory: $ZSH_CACHE_DIR"
+  return 1
+fi
+if [[ ! -w "$ZSH_CACHE_DIR" ]]; then
+  print -u2 -- "Zsh cache directory is not writable: $ZSH_CACHE_DIR"
+  return 1
+fi
 autoload -Uz compinit
-compinit -d "$ZSH_CACHE_DIR/zcompdump-${ZSH_VERSION}"
+compinit -d "$ZSH_CACHE_DIR/zcompdump-${ZSH_VERSION}" || {
+  print -u2 -- "Failed to initialize Zsh completion."
+  return 1
+}
 
 # fzf-tab must load after compinit and before widgets wrapped by other plugins.
-[[ -r "$XDG_DATA_HOME/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh" ]] && \
-  source "$XDG_DATA_HOME/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
+source "$fzf_tab_plugin" || { print -u2 -- "Failed to load fzf-tab."; return 1; }
+source "$zsh_autosuggestions" || { print -u2 -- "Failed to load zsh-autosuggestions."; return 1; }
+source "$fzf_key_bindings" || { print -u2 -- "Failed to load fzf key bindings."; return 1; }
+source "$fzf_completion" || { print -u2 -- "Failed to load fzf completion."; return 1; }
 
-[[ -r /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
-  source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+_dotfiles_fnm_env="$(fnm env --use-on-cd --shell zsh)" || {
+  print -u2 -- "Failed to initialize fnm."
+  return 1
+}
+eval "$_dotfiles_fnm_env" || { print -u2 -- "Failed to apply fnm environment."; return 1; }
+unset _dotfiles_fnm_env
 
-# Ubuntu's fzf package ships these optional integration files.
-[[ -r /usr/share/doc/fzf/examples/key-bindings.zsh ]] && \
-  source /usr/share/doc/fzf/examples/key-bindings.zsh
-[[ -r /usr/share/doc/fzf/examples/completion.zsh ]] && \
-  source /usr/share/doc/fzf/examples/completion.zsh
+_dotfiles_direnv_hook="$(direnv hook zsh)" || {
+  print -u2 -- "Failed to initialize direnv."
+  return 1
+}
+eval "$_dotfiles_direnv_hook" || { print -u2 -- "Failed to apply direnv hook."; return 1; }
+unset _dotfiles_direnv_hook
 
-# Initialize tools only when installed.
-if (( $+commands[fnm] )); then
-  eval "$(fnm env --use-on-cd --shell zsh)"
-fi
+_dotfiles_zoxide_init="$(zoxide init zsh)" || {
+  print -u2 -- "Failed to initialize zoxide."
+  return 1
+}
+eval "$_dotfiles_zoxide_init" || { print -u2 -- "Failed to apply zoxide initialization."; return 1; }
+unset _dotfiles_zoxide_init
+alias cd=z
 
-if (( $+commands[direnv] )); then
-  eval "$(direnv hook zsh)"
-fi
-
-if (( $+commands[zoxide] )); then
-  eval "$(zoxide init zsh)"
-  alias cd=z
-fi
-
-if (( $+commands[starship] )); then
-  eval "$(starship init zsh)"
-fi
+_dotfiles_starship_init="$(starship init zsh)" || {
+  print -u2 -- "Failed to initialize Starship."
+  return 1
+}
+eval "$_dotfiles_starship_init" || { print -u2 -- "Failed to apply Starship initialization."; return 1; }
+unset _dotfiles_starship_init
 
 # Preserve the old shortcuts while accounting for Ubuntu binary names.
 alias c='clear'
@@ -61,23 +132,29 @@ alias grep='rg'
 
 if (( $+commands[bat] )); then
   alias cat='bat -p'
-elif (( $+commands[batcat] )); then
+else
   alias cat='batcat -p'
 fi
 
 if (( $+commands[fd] )); then
   alias find='fd'
-elif (( $+commands[fdfind] )); then
+else
   alias find='fdfind'
 fi
 
-if (( $+commands[eza] )); then
-  alias tree='eza --tree --icons'
-fi
+alias tree='eza --tree --icons'
 
 # Local-only overrides stay outside chezmoi.
-[[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+if [[ -r "$HOME/.zshrc.local" ]]; then
+  source "$HOME/.zshrc.local" || {
+    print -u2 -- "Failed to load $HOME/.zshrc.local."
+    return 1
+  }
+fi
 
 # Keep syntax highlighting last so it can wrap the final line editor widgets.
-[[ -r /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
-  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source "$zsh_syntax_highlighting" || {
+  print -u2 -- "Failed to load zsh-syntax-highlighting."
+  return 1
+}
+unset fzf_tab_plugin zsh_autosuggestions fzf_key_bindings fzf_completion zsh_syntax_highlighting

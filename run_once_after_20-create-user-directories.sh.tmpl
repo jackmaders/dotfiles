@@ -6,11 +6,4 @@ mkdir -p \
   "$HOME/dev/github.com" \
   "$HOME/vaults"
 
-case {{ .profile | quote }} in
-  personal)
-    mkdir -p "$HOME/dev/personal"
-    ;;
-  twinkl)
-    mkdir -p "$HOME/dev/twinkl"
-    ;;
-esac
+{{ includeTemplate (printf "profile/%s/directories.sh" .profile) . }}

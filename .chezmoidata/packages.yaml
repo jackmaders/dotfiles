@@ -8,6 +8,7 @@ packages:
       - curl
       - wget
       - vim
+      - ncurses-bin
       - ripgrep
       - fd-find
       - bat
