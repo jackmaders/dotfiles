@@ -52,18 +52,29 @@ chezmoi --source "$PWD" diff
 chezmoi --source "$PWD" apply
 ```
 
-The apply step installs Ubuntu packages when the package list changes, then
-sets Zsh as the user's login shell once. It uses `sudo` for APT and `chsh`, and
-skips packages that are not present in the configured Ubuntu repositories.
-Open a new WSL session after apply for the default shell change to take effect.
+The apply step installs Ubuntu packages when the package list changes, creates
+`~/.ssh/id_ed25519` if it does not already exist, then sets Zsh as the user's
+login shell once. `ssh-keygen` asks for a passphrase; `sudo` is used for APT and
+`chsh`. Packages that are not in the configured Ubuntu repositories are
+skipped. Open a new WSL session after apply for the default shell change to
+take effect.
+
+To use the new SSH key with GitHub, run:
+
+```sh
+gh auth login --git-protocol ssh
+```
+
+Follow the prompts to authenticate and upload the generated public key.
 
 ## Profiles
 
 The local file `~/.config/chezmoi/chezmoi.toml` contains `data.profile`,
 `data.gitName`, and `data.gitEmail`. Set `data.profile` to `personal` or
 `twinkl`; shared templates use that value for Git and Starship configuration.
-For Twinkl SSH signing, set `data.gitSigningKey` to the public key path. Keep
-private keys and other secrets outside this repository.
+Git commit and tag signing are enabled only for the Twinkl profile, using the
+generated `~/.ssh/id_ed25519.pub` key. Personal profile commits are not signed.
+Keep private keys and other secrets outside this repository.
 
 The APT list contains shared shell and CLI dependencies. Applications that use
 vendor-specific installers (for example Bun, dust, fnm, pnpm, Obsidian, xh,

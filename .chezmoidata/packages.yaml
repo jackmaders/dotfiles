@@ -4,6 +4,7 @@ packages:
       - zsh
       - git
       - git-lfs
+      - openssh-client
       - curl
       - wget
       - vim

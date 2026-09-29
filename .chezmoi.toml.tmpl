@@ -4,7 +4,10 @@
 {{- end -}}
 {{- $gitName := promptStringOnce . "gitName" "Git author name" -}}
 {{- $gitEmail := promptStringOnce . "gitEmail" "Git author email" -}}
-{{- $gitSigningKey := promptStringOnce . "gitSigningKey" "SSH public key path for Git signing (leave blank if unused)" -}}
+{{- $gitSigningKey := "" -}}
+{{- if eq $profile "twinkl" -}}
+{{- $gitSigningKey = printf "%s/.ssh/id_ed25519.pub" .chezmoi.homeDir -}}
+{{- end -}}
 [data]
 profile = {{ $profile | quote }}
 gitName = {{ $gitName | quote }}

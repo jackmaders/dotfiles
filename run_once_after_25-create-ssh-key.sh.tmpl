@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. /etc/os-release
+if [[ "${ID:-}" != ubuntu ]]; then
+  echo "SSH key setup targets Ubuntu; skipping (found ${ID:-unknown})." >&2
+  exit 0
+fi
+
+if ! command -v ssh-keygen >/dev/null 2>&1; then
+  echo "ssh-keygen is unavailable; cannot create an SSH key." >&2
+  exit 1
+fi
+
+ssh_dir="$HOME/.ssh"
+key_path="$ssh_dir/id_ed25519"
+mkdir -p "$ssh_dir"
+chmod 700 "$ssh_dir"
+
+if [[ -e "$key_path" || -e "$key_path.pub" ]]; then
+  echo "Keeping existing SSH key files at $key_path (if present)."
+  exit 0
+fi
+
+ssh-keygen -t ed25519 -C "$USER@$(hostname)" -f "$key_path"
