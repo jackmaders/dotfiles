@@ -5,7 +5,7 @@ require_command() {
   local command_name="$1"
   local install_hint="$2"
 
-  if (( ! $+commands[$command_name] )); then
+  if ! command -v "$command_name" >/dev/null 2>&1; then
     print -u2 -- "Required command '$command_name' is missing; $install_hint."
     return 1
   fi
@@ -101,6 +101,10 @@ _dotfiles_fnm_env="$(fnm env --use-on-cd --shell zsh)" || {
 }
 eval "$_dotfiles_fnm_env" || { print -u2 -- "Failed to apply fnm environment."; return 1; }
 unset _dotfiles_fnm_env
+if ! command -v fnm >/dev/null 2>&1; then
+  print -u2 -- "fnm initialization removed fnm from PATH."
+  return 1
+fi
 
 _dotfiles_direnv_hook="$(direnv hook zsh)" || {
   print -u2 -- "Failed to initialize direnv."
