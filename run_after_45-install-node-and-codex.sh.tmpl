@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export PATH="$HOME/.local/bin:$PATH"
+
+fnm_binary="$HOME/.local/bin/fnm"
+if [[ ! -x "$fnm_binary" ]]; then
+  echo "fnm is unavailable; cannot install Node.js and Codex." >&2
+  exit 1
+fi
+
+# Keep the latest LTS installed and use it as the default Node.js version.
+"$fnm_binary" install --lts
+node_version="$("$fnm_binary" exec --using=lts/latest node -p 'process.versions.node')"
+"$fnm_binary" default "$node_version"
+
+# Run npm through fnm so a Windows Node on the WSL PATH cannot own this install.
+if ! "$fnm_binary" exec --using="$node_version" npm list --global --depth=0 @openai/codex >/dev/null 2>&1; then
+  "$fnm_binary" exec --using="$node_version" npm install --global @openai/codex
+fi
+
+"$fnm_binary" exec --using="$node_version" codex --version >/dev/null
