@@ -23,10 +23,22 @@ interactive behavior in `.zshrc`.
 
 ## First run
 
-Install chezmoi and Git, then initialize this repo as the source directory. On
-first initialization, chezmoi asks which profile to use and for the local Git
-identity values. These are stored in the machine-local chezmoi config, not in
-this repo.
+Install chezmoi and Git inside Ubuntu, then initialize this repo as the source
+directory. For example, from Ubuntu/WSL:
+
+```sh
+sudo apt update
+sudo apt install chezmoi git
+```
+
+Run chezmoi as your normal user, not with `sudo`. In particular, don't run the
+installer while your working directory is under `/mnt/c`: Windows-mounted
+directories may not support the `chmod` the installer uses. If you use the
+upstream installer, run it from your Linux home directory as your normal user.
+
+On first initialization, chezmoi asks which profile to use and for the local
+Git identity values. These are stored in the machine-local chezmoi config, not
+in this repo.
 
 ```sh
 chezmoi --source "$PWD" init
