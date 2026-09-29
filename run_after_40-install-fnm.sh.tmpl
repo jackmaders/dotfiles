@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ ! -r /etc/os-release ]]; then
+  echo "Cannot detect operating system; cannot install fnm." >&2
+  exit 1
+fi
+
+. /etc/os-release
+if [[ "${ID:-}" != ubuntu ]]; then
+  echo "fnm installation targets Ubuntu (found ${ID:-unknown}); refusing to continue." >&2
+  exit 1
+fi
+
+fnm_version="v1.39.0"
+fnm_install_dir="$HOME/.local/bin"
+fnm_binary="$fnm_install_dir/fnm"
+expected_version="fnm ${fnm_version#v}"
+
+if [[ -x "$fnm_binary" ]] && [[ "$("$fnm_binary" --version)" == "$expected_version" ]]; then
+  exit 0
+fi
+
+if ! command -v curl >/dev/null 2>&1; then
+  echo "curl is unavailable; cannot install fnm." >&2
+  exit 1
+fi
+if ! command -v unzip >/dev/null 2>&1; then
+  echo "unzip is unavailable; cannot install fnm." >&2
+  exit 1
+fi
+
+case "$(uname -m)" in
+  x86_64 | amd64)
+    fnm_asset="fnm-linux"
+    ;;
+  aarch64 | arm64 | armv8*)
+    fnm_asset="fnm-arm64"
+    ;;
+  arm | armv7*)
+    fnm_asset="fnm-arm32"
+    ;;
+  *)
+    echo "Unsupported architecture for fnm: $(uname -m)" >&2
+    exit 1
+    ;;
+esac
+
+download_dir="$(mktemp -d)"
+temporary_binary="$fnm_binary.tmp.$$"
+cleanup() {
+  rm -rf -- "$download_dir"
+  rm -f -- "$temporary_binary"
+}
+trap cleanup EXIT
+
+download_url="https://github.com/Schniz/fnm/releases/download/$fnm_version/$fnm_asset.zip"
+curl --fail --location --silent --show-error "$download_url" --output "$download_dir/fnm.zip"
+unzip -q "$download_dir/fnm.zip" -d "$download_dir"
+
+if [[ -f "$download_dir/fnm" ]]; then
+  downloaded_binary="$download_dir/fnm"
+elif [[ -f "$download_dir/$fnm_asset/fnm" ]]; then
+  downloaded_binary="$download_dir/$fnm_asset/fnm"
+else
+  echo "The fnm release archive did not contain the expected binary." >&2
+  exit 1
+fi
+
+mkdir -p -- "$fnm_install_dir"
+install -m 0755 -- "$downloaded_binary" "$temporary_binary"
+mv -f -- "$temporary_binary" "$fnm_binary"
+
+installed_version="$("$fnm_binary" --version)"
+if [[ "$installed_version" != "$expected_version" ]]; then
+  echo "Installed fnm version '$installed_version'; expected '$expected_version'." >&2
+  exit 1
+fi

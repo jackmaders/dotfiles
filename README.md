@@ -11,6 +11,7 @@ chezmoi.toml.tmpl                 # First-run profile and Git identity prompts
 .chezmoidata/packages.yaml        # Ubuntu APT package list
 run_onchange_before_*.sh.tmpl     # Install APT packages when the list changes
 run_once_after_*.sh.tmpl          # One-time setup after files and packages
+run_after_*.sh.tmpl               # Validate/install required tools on each apply
 dot_zshenv.tmpl                  # XDG paths, ZDOTDIR, and selected profile
 dot_config/zsh/                  # Login and interactive Zsh startup files
 dot_config/git/config.tmpl       # Shared Git settings and profile identity
@@ -53,7 +54,8 @@ chezmoi --source "$PWD" diff
 chezmoi --source "$PWD" apply
 ```
 
-The apply step installs Ubuntu packages when the package list changes, creates
+The apply step installs Ubuntu packages when the package list changes, ensures
+the pinned `fnm` release is installed in `~/.local/bin`, creates
 `~/.ssh/id_ed25519` if it does not already exist, then sets Zsh as the user's
 login shell once. `ssh-keygen` asks for a passphrase; `sudo` is used for APT and
 `chsh`. APT or setup failures stop the apply instead of being skipped. Open a
@@ -78,14 +80,15 @@ using the generated `~/.ssh/id_ed25519.pub` key. Personal profile commits and
 tags are explicitly not signed.
 Keep private keys and other secrets outside this repository.
 
-The APT list contains shared shell and CLI dependencies. Interactive Zsh also
-requires `fnm`, which currently needs to be installed separately using its
-Ubuntu installation source. Missing required commands or shell integrations
-stop Zsh startup. Applications that use other vendor-specific installers
-(such as Bun, dust, pnpm, Obsidian, xh, vimgolf, Herdr, .NET/Godot,
-Antigravity CLI, AWS Vault, and Claude Code) still need their Ubuntu
-installation source added before they can be automated here. `chezmoi apply`
-does not remove packages when a profile changes.
+The APT list contains shared shell and CLI dependencies. `fnm` is installed
+from its pinned official release on each apply; a missing or mismatched version
+is installed or replaced. Its executable is in `~/.local/bin`, which `.zshenv`
+adds to `PATH`. Missing required commands or shell integrations stop Zsh
+startup. Applications that use other vendor-specific installers (such as Bun,
+dust, pnpm, Obsidian, xh, vimgolf, Herdr, .NET/Godot, Antigravity CLI, AWS
+Vault, and Claude Code) still need their Ubuntu installation source added
+before they can be automated here. `chezmoi apply` does not remove packages
+when a profile changes.
 
 The config leaves WSLg-provided display and runtime variables to WSL instead of
 hard-coding the old NixOS values.
