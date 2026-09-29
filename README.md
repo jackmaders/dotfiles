@@ -82,9 +82,10 @@ Keep private keys and other secrets outside this repository.
 
 The APT list contains shared shell and CLI dependencies. `fnm` is installed
 from its pinned official release on each apply; a missing or mismatched version
-is installed or replaced. Its executable is in `~/.local/bin`, which `.zshenv`
-adds to `PATH`. Missing required commands or shell integrations stop Zsh
-startup. Applications that use other vendor-specific installers (such as Bun,
+is installed or replaced. After package and fnm setup, `chezmoi apply` checks
+that every required command is available and fails if one is missing. The fnm
+executable is in `~/.local/bin`, which `.zshenv` adds to `PATH`. Applications
+that use other vendor-specific installers (such as Bun,
 dust, pnpm, Obsidian, xh, vimgolf, Herdr, .NET/Godot, Antigravity CLI, AWS
 Vault, and Claude Code) still need their Ubuntu installation source added
 before they can be automated here. `chezmoi apply` does not remove packages
