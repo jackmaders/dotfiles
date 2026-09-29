@@ -1,4 +1,7 @@
-{{- $profile := promptChoiceOnce . "profile" "Choose a dotfiles profile" (list "personal" "twinkl") "personal" -}}
+{{- $profile := promptStringOnce . "profile" "Choose a dotfiles profile (personal or twinkl)" "personal" -}}
+{{- if and (ne $profile "personal") (ne $profile "twinkl") -}}
+{{- fail "profile must be personal or twinkl" -}}
+{{- end -}}
 {{- $gitName := promptStringOnce . "gitName" "Git author name" -}}
 {{- $gitEmail := promptStringOnce . "gitEmail" "Git author email" -}}
 {{- $gitSigningKey := promptStringOnce . "gitSigningKey" "SSH public key path for Git signing (leave blank if unused)" -}}

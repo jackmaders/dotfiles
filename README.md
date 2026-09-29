@@ -36,9 +36,9 @@ installer while your working directory is under `/mnt/c`: Windows-mounted
 directories may not support the `chmod` the installer uses. If you use the
 upstream installer, run it from your Linux home directory as your normal user.
 
-On first initialization, chezmoi asks which profile to use and for the local
-Git identity values. These are stored in the machine-local chezmoi config, not
-in this repo.
+On first initialization, chezmoi asks you to type `personal` or `twinkl` for
+the profile, then asks for the local Git identity values. These are stored in
+the machine-local chezmoi config, not in this repo.
 
 ```sh
 chezmoi --source "$PWD" init
