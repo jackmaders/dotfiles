@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${ID:-}" != ubuntu ]]; then
+  . /etc/os-release
+fi
+if [[ "${ID:-}" != ubuntu ]]; then
+  echo "Default-shell setup targets Ubuntu; skipping (found ${ID:-unknown})." >&2
+  exit 0
+fi
+
+zsh_path="$(command -v zsh || true)"
+if [[ -z "$zsh_path" ]]; then
+  echo "zsh is not installed; cannot set it as the default shell." >&2
+  exit 1
+fi
+
+current_shell="$(getent passwd "$USER" | cut -d: -f7)"
+if [[ "$current_shell" == "$zsh_path" ]]; then
+  exit 0
+fi
+
+if ! command -v sudo >/dev/null 2>&1; then
+  echo "sudo is required to set the default shell for $USER." >&2
+  exit 1
+fi
+
+sudo chsh -s "$zsh_path" "$USER"

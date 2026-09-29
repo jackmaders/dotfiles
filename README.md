@@ -10,6 +10,7 @@ installation and normal dotfiles.
 chezmoi.toml.tmpl                 # First-run profile and Git identity prompts
 .chezmoidata/packages.yaml        # Ubuntu APT package list
 run_onchange_before_*.sh.tmpl     # Install APT packages when the list changes
+run_once_after_*.sh.tmpl          # One-time setup after files and packages
 dot_zshenv.tmpl                  # XDG paths, ZDOTDIR, and selected profile
 dot_config/zsh/                  # Login and interactive Zsh startup files
 dot_config/git/config.tmpl       # Shared Git settings and profile identity
@@ -51,13 +52,10 @@ chezmoi --source "$PWD" diff
 chezmoi --source "$PWD" apply
 ```
 
-The apply step runs the Ubuntu APT package script when its package list changes.
-It uses `sudo` for APT and skips packages that are not present in the configured
-Ubuntu repositories. Set Zsh as the WSL user's login shell once with:
-
-```sh
-sudo chsh -s "$(command -v zsh)" "$USER"
-```
+The apply step installs Ubuntu packages when the package list changes, then
+sets Zsh as the user's login shell once. It uses `sudo` for APT and `chsh`, and
+skips packages that are not present in the configured Ubuntu repositories.
+Open a new WSL session after apply for the default shell change to take effect.
 
 ## Profiles
 
