@@ -1,0 +1,83 @@
+# Interactive shell configuration.
+[[ -o interactive ]] || return
+
+setopt interactivecomments
+
+# History lives in XDG data and is shared between interactive shells.
+HISTFILE="${XDG_DATA_HOME}/zsh/zsh_history"
+HISTSIZE=50000
+SAVEHIST=50000
+[[ -d "${HISTFILE:h}" ]] || command mkdir -p -- "${HISTFILE:h}"
+setopt sharehistory hist_ignore_dups hist_ignore_space hist_expire_dups_first
+
+# Ctrl+Left / Ctrl+Right and history prefix search.
+bindkey '^[[1;5D' backward-word
+bindkey '^[[1;5C' forward-word
+bindkey '^[OA' history-beginning-search-backward
+bindkey '^[OB' history-beginning-search-forward
+
+# Completion and its generated cache.
+typeset -g ZSH_CACHE_DIR="${XDG_CACHE_HOME}/zsh"
+[[ -d "$ZSH_CACHE_DIR" ]] || command mkdir -p -- "$ZSH_CACHE_DIR"
+autoload -Uz compinit
+compinit -d "$ZSH_CACHE_DIR/zcompdump-${ZSH_VERSION}"
+
+# fzf-tab must load after compinit and before widgets wrapped by other plugins.
+[[ -r "$XDG_DATA_HOME/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh" ]] && \
+  source "$XDG_DATA_HOME/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
+
+[[ -r /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
+  source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+# Ubuntu's fzf package ships these optional integration files.
+[[ -r /usr/share/doc/fzf/examples/key-bindings.zsh ]] && \
+  source /usr/share/doc/fzf/examples/key-bindings.zsh
+[[ -r /usr/share/doc/fzf/examples/completion.zsh ]] && \
+  source /usr/share/doc/fzf/examples/completion.zsh
+
+# Initialize tools only when installed.
+if (( $+commands[fnm] )); then
+  eval "$(fnm env --use-on-cd --shell zsh)"
+fi
+
+if (( $+commands[direnv] )); then
+  eval "$(direnv hook zsh)"
+fi
+
+if (( $+commands[zoxide] )); then
+  eval "$(zoxide init zsh)"
+  alias cd=z
+fi
+
+if (( $+commands[starship] )); then
+  eval "$(starship init zsh)"
+fi
+
+# Preserve the old shortcuts while accounting for Ubuntu binary names.
+alias c='clear'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias grep='rg'
+
+if (( $+commands[bat] )); then
+  alias cat='bat -p'
+elif (( $+commands[batcat] )); then
+  alias cat='batcat -p'
+fi
+
+if (( $+commands[fd] )); then
+  alias find='fd'
+elif (( $+commands[fdfind] )); then
+  alias find='fdfind'
+fi
+
+if (( $+commands[eza] )); then
+  alias tree='eza --tree --icons'
+fi
+
+# Local-only overrides stay outside chezmoi.
+[[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+
+# Keep syntax highlighting last so it can wrap the final line editor widgets.
+[[ -r /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
+  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh

@@ -1,0 +1,22 @@
+{
+  "languages": {
+    "CSharp": {
+      "language_servers": ["csharp-ls", "...", "!roslyn", "!omnisharp"]
+    }
+  },
+  "lsp": {
+    "csharp-ls": {
+      "binary": {
+        "path": "csharp-ls"
+      }
+    }
+  },
+  "dap": {
+    "netcoredbg": {
+      "binary": {
+        "path": "netcoredbg"
+      },
+      "args": []
+    }
+  }
+}

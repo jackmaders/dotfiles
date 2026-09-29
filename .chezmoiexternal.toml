@@ -1,0 +1,5 @@
+[".local/share/zsh/plugins/fzf-tab"]
+type = "archive"
+url = "https://github.com/Aloxaf/fzf-tab/archive/refs/tags/v1.3.0.tar.gz"
+stripComponents = 1
+refreshPeriod = "168h"

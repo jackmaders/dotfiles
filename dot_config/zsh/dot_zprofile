@@ -1,0 +1,2 @@
+# Login-shell setup runs before .zshrc.
+# Put login-session environment setup here when needed.

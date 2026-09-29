@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+mkdir -p \
+  "$HOME/dev/sandbox" \
+  "$HOME/dev/github.com" \
+  "$HOME/vaults"
+
+case {{ .profile | quote }} in
+  personal)
+    mkdir -p "$HOME/dev/personal"
+    ;;
+  twinkl)
+    mkdir -p "$HOME/dev/twinkl"
+    ;;
+esac

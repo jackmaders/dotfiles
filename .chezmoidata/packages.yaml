@@ -1,0 +1,25 @@
+packages:
+  ubuntu:
+    common:
+      - zsh
+      - git
+      - git-lfs
+      - curl
+      - wget
+      - vim
+      - ripgrep
+      - fd-find
+      - bat
+      - fzf
+      - direnv
+      - eza
+      - zoxide
+      - git-delta
+      - gh
+      - just
+      - starship
+      - zsh-completions
+      - zsh-autosuggestions
+      - zsh-syntax-highlighting
+    personal: []
+    twinkl: []

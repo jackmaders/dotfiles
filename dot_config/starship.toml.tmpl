@@ -1,0 +1,54 @@
+format = "$directory$git_branch$git_status$character"
+right_format = "$time"
+
+[time]
+disabled = false
+format = "[$time]($style)"
+time_format = "%R"
+{{ if eq .profile "twinkl" }}
+style = "#657b83"
+{{ else }}
+style = "#5c6370"
+{{ end }}
+
+[directory]
+{{ if eq .profile "twinkl" }}
+style = "bold #268bd2"
+{{ else }}
+style = "bold #61afef"
+{{ end }}
+
+[character]
+{{ if eq .profile "twinkl" }}
+success_symbol = "[❯](bold #2aa198)"
+error_symbol = "[❯](bold #dc322f)"
+vimcmd_symbol = "[❮](bold #859900)"
+{{ else }}
+success_symbol = "[❯](bold #c678dd)"
+error_symbol = "[❯](bold #e06c75)"
+vimcmd_symbol = "[❮](bold #98c379)"
+{{ end }}
+
+[git_branch]
+format = "[$branch]($style) "
+{{ if eq .profile "twinkl" }}
+style = "bold #657b83"
+{{ else }}
+style = "bold #5c6370"
+{{ end }}
+
+[git_status]
+format = "([$all_status$ahead_behind]($style) )"
+{{ if eq .profile "twinkl" }}
+style = "bold #dc322f"
+{{ else }}
+style = "bold #e06c75"
+{{ end }}
+
+[cmd_duration]
+format = "[$duration]($style) "
+{{ if eq .profile "twinkl" }}
+style = "bold #b58900"
+{{ else }}
+style = "bold #e5c07b"
+{{ end }}

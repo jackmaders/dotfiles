@@ -1,0 +1,10 @@
+{{- $profile := promptChoiceOnce . "profile" "Choose a dotfiles profile" (list "personal" "twinkl") "personal" -}}
+{{- $gitName := promptStringOnce . "gitName" "Git author name" -}}
+{{- $gitEmail := promptStringOnce . "gitEmail" "Git author email" -}}
+{{- $gitSigningKey := promptStringOnce . "gitSigningKey" "SSH public key path for Git signing (leave blank if unused)" -}}
+[data]
+profile = {{ $profile | quote }}
+gitName = {{ $gitName | quote }}
+gitEmail = {{ $gitEmail | quote }}
+gitSigningKey = {{ $gitSigningKey | quote }}
+godotPath = ""
