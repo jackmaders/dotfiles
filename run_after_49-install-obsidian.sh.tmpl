@@ -18,9 +18,7 @@ if ! command -v curl >/dev/null 2>&1; then
 fi
 
 case "$(dpkg --print-architecture)" in
-  amd64)
-    download_url="https://obsidian.md/download?platform=linux&arch=x64&package=deb"
-    ;;
+  amd64) ;;
   *)
     echo "The official Obsidian .deb installer is available for amd64; found $(dpkg --print-architecture)." >&2
     exit 1
@@ -33,6 +31,18 @@ cleanup() {
 }
 trap cleanup EXIT
 
+release_metadata="$download_dir/desktop-releases.json"
+curl --fail --location --silent --show-error \
+  https://raw.githubusercontent.com/obsidianmd/obsidian-releases/master/desktop-releases.json \
+  --output "$release_metadata"
+
+release_version="$(sed -n 's/^[[:space:]]*"latestVersion":[[:space:]]*"\([^"]*\)".*/\1/p' "$release_metadata" | head -n 1)"
+if [[ ! "$release_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Could not read a stable Obsidian desktop version from the official release metadata." >&2
+  exit 1
+fi
+
+download_url="https://github.com/obsidianmd/obsidian-releases/releases/download/v${release_version}/obsidian_${release_version}_amd64.deb"
 deb_file="$download_dir/obsidian.deb"
 curl --fail --location --silent --show-error "$download_url" --output "$deb_file"
 if ! dpkg-deb --info "$deb_file" >/dev/null 2>&1; then

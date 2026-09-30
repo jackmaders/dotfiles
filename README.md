@@ -94,9 +94,9 @@ is installed or replaced. After installing packages, fnm, Herdr, Node.js,
 Codex, Claude Code, Antigravity CLI, and Obsidian, `chezmoi apply` checks that
 every required command is available and fails if one is missing. The fnm,
 Antigravity CLI, and Herdr executables are in `~/.local/bin`, which `.zshenv`
-adds to `PATH`. Antigravity CLI and Obsidian are updated by their installers
-when `chezmoi apply` runs. `chezmoi apply` does not remove packages when a
-profile changes.
+adds to `PATH`. Antigravity CLI self-updates during normal use; Obsidian
+downloads the latest stable desktop release when `chezmoi apply` runs.
+`chezmoi apply` does not remove packages when a profile changes.
 
 The config leaves WSLg-provided display and runtime variables to WSL instead of
 hard-coding the old NixOS values.
