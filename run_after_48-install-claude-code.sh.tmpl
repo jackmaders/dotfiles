@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ ! -r /etc/os-release ]]; then
+  echo "Cannot detect operating system; cannot install Claude Code." >&2
+  exit 1
+fi
+
+. /etc/os-release
+if [[ "${ID:-}" != ubuntu ]]; then
+  echo "Claude Code installation targets Ubuntu (found ${ID:-unknown}); refusing to continue." >&2
+  exit 1
+fi
+
+if ! command -v curl >/dev/null 2>&1; then
+  echo "curl is unavailable; cannot install Claude Code." >&2
+  exit 1
+fi
+
+claude_binary="$HOME/.local/bin/claude"
+if [[ -x "$claude_binary" ]] && "$claude_binary" --version >/dev/null 2>&1; then
+  exit 0
+fi
+
+curl -fsSL https://claude.ai/install.sh | bash
+
+if [[ ! -x "$claude_binary" ]]; then
+  echo "The Claude Code installer did not create an executable at $claude_binary." >&2
+  exit 1
+fi
+
+"$claude_binary" --version >/dev/null

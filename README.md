@@ -58,7 +58,9 @@ The apply step installs Ubuntu packages when the package list changes, ensures
 the pinned `fnm` release is installed in `~/.local/bin`, installs the latest
 Node.js LTS and makes it the `fnm` default, then installs Codex CLI with that
 Linux Node.js if it is not already installed for the LTS version. It then
-installs the latest stable Herdr release with its official Linux installer.
+installs the latest stable Herdr release with its official Linux installer
+and Claude Code with Anthropic's native Linux installer. Claude Code manages
+its own updates after installation.
 The apply also creates `~/.ssh/id_ed25519` if it does not already exist, then
 sets Zsh as the user's login shell once. `ssh-keygen` asks for a passphrase;
 `sudo` is used for APT and `chsh`. APT or setup failures stop the apply instead
@@ -86,15 +88,14 @@ Keep private keys and other secrets outside this repository.
 
 The APT list contains shared shell and CLI dependencies. `fnm` is installed
 from its pinned official release on each apply; a missing or mismatched version
-is installed or replaced. After package, fnm, Herdr, Node.js, and Codex setup,
-`chezmoi apply` checks that every required command is available and fails if
-one is missing. The fnm executable is in `~/.local/bin`, which `.zshenv` adds
-to `PATH`. Applications
+is installed or replaced. After installing packages, fnm, Herdr, Node.js,
+Codex, and Claude Code, `chezmoi apply` checks that every required command is
+available and fails if one is missing. The fnm executable is in `~/.local/bin`,
+which `.zshenv` adds to `PATH`. Applications
 that use other vendor-specific installers (such as Bun,
-dust, pnpm, Obsidian, xh, vimgolf, .NET/Godot, Antigravity CLI, AWS
-Vault, and Claude Code) still need their Ubuntu installation source added
-before they can be automated here. `chezmoi apply` does not remove packages
-when a profile changes.
+dust, pnpm, Obsidian, xh, vimgolf, .NET/Godot, Antigravity CLI, and AWS Vault)
+still need their Ubuntu installation source added before they can be automated
+here. `chezmoi apply` does not remove packages when a profile changes.
 
 The config leaves WSLg-provided display and runtime variables to WSL instead of
 hard-coding the old NixOS values.
