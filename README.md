@@ -12,8 +12,8 @@ chezmoi.toml.tmpl                 # First-run profile and Git identity prompts
 run_onchange_before_*.sh.tmpl     # Install APT packages when the list changes
 run_once_after_*.sh.tmpl          # One-time setup after files and packages
 run_after_*.sh.tmpl               # Validate/install required tools on each apply
-dot_zshenv.tmpl                  # XDG paths, ZDOTDIR, and selected profile
-dot_config/zsh/                  # Login and interactive Zsh startup files
+dot_zshenv.tmpl                  # Bootstrap the XDG Zsh startup directory
+dot_config/zsh/                  # Zsh environment, login, and interactive startup files
 dot_config/git/config.tmpl       # Shared Git settings and profile identity
 .chezmoitemplates/profile/       # Dynamically included personal/Twinkl settings
 dot_config/starship.toml.tmpl    # Shared prompt settings plus selected theme

@@ -1,20 +1,7 @@
-# Read by every zsh process, including non-interactive shells.
-# Keep this file quiet and limited to environment and startup-path setup.
+# Zsh uses ZDOTDIR to locate .zshenv before loading this file in child shells.
+# Bootstrap the configured startup directory, then load its environment setup.
+export ZDOTDIR="${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}"
 
-export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
-export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
-
-export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
-export PNPM_HOME="${PNPM_HOME:-$XDG_DATA_HOME/pnpm}"
-export RUBY_HOME="${RUBY_HOME:-$XDG_DATA_HOME/gem/ruby/3.3.0/bin}"
-
-typeset -U path PATH
-path=("$HOME/.local/bin" "$BUN_INSTALL/bin" "$PNPM_HOME" "$RUBY_HOME" "" $path)
-
-# Zsh reads its remaining startup files from the XDG config directory.
-export ZDOTDIR="${ZDOTDIR:-$XDG_CONFIG_HOME/zsh}"
-
-# Make the selected chezmoi profile available to other shell tools.
-export DOTFILES_PROFILE={{ .profile | quote }}
+if [[ -r "$ZDOTDIR/.zshenv" ]]; then
+  source "$ZDOTDIR/.zshenv" || return 1
+fi
