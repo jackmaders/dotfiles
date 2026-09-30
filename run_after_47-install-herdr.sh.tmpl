@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ ! -r /etc/os-release ]]; then
+  echo "Cannot detect operating system; cannot install Herdr." >&2
+  exit 1
+fi
+
+. /etc/os-release
+if [[ "${ID:-}" != ubuntu ]]; then
+  echo "Herdr installation targets Ubuntu (found ${ID:-unknown}); refusing to continue." >&2
+  exit 1
+fi
+
+if ! command -v curl >/dev/null 2>&1; then
+  echo "curl is unavailable; cannot install Herdr." >&2
+  exit 1
+fi
+
+curl -fsSL https://herdr.dev/install.sh | sh
+
+herdr_binary="$HOME/.local/bin/herdr"
+if [[ ! -x "$herdr_binary" ]]; then
+  echo "The Herdr installer did not create an executable at $herdr_binary." >&2
+  exit 1
+fi

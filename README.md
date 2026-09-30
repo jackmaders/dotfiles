@@ -57,11 +57,13 @@ chezmoi --source "$PWD" apply
 The apply step installs Ubuntu packages when the package list changes, ensures
 the pinned `fnm` release is installed in `~/.local/bin`, installs the latest
 Node.js LTS and makes it the `fnm` default, then installs Codex CLI with that
-Linux Node.js if it is not already installed for the LTS version. It also
-creates `~/.ssh/id_ed25519` if it does not already exist, then sets Zsh as the
-user's login shell once. `ssh-keygen` asks for a passphrase; `sudo` is used for
-APT and `chsh`. APT or setup failures stop the apply instead of being skipped.
-Open a new WSL session after apply for the default shell change to take effect.
+Linux Node.js if it is not already installed for the LTS version. It then
+installs the latest stable Herdr release with its official Linux installer.
+The apply also creates `~/.ssh/id_ed25519` if it does not already exist, then
+sets Zsh as the user's login shell once. `ssh-keygen` asks for a passphrase;
+`sudo` is used for APT and `chsh`. APT or setup failures stop the apply instead
+of being skipped. Open a new WSL session after apply for the default shell
+change to take effect.
 
 To use the new SSH key with GitHub, run:
 
@@ -84,12 +86,12 @@ Keep private keys and other secrets outside this repository.
 
 The APT list contains shared shell and CLI dependencies. `fnm` is installed
 from its pinned official release on each apply; a missing or mismatched version
-is installed or replaced. After package, fnm, Node.js, and Codex setup,
+is installed or replaced. After package, fnm, Herdr, Node.js, and Codex setup,
 `chezmoi apply` checks that every required command is available and fails if
 one is missing. The fnm executable is in `~/.local/bin`, which `.zshenv` adds
 to `PATH`. Applications
 that use other vendor-specific installers (such as Bun,
-dust, pnpm, Obsidian, xh, vimgolf, Herdr, .NET/Godot, Antigravity CLI, AWS
+dust, pnpm, Obsidian, xh, vimgolf, .NET/Godot, Antigravity CLI, AWS
 Vault, and Claude Code) still need their Ubuntu installation source added
 before they can be automated here. `chezmoi apply` does not remove packages
 when a profile changes.
