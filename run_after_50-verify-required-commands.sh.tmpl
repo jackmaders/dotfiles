@@ -2,6 +2,8 @@
 set -euo pipefail
 
 export PATH="$HOME/.local/bin:$PATH"
+export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
+export PATH="$BUN_INSTALL/bin:$PATH"
 
 require_command() {
   local command_name="$1"
@@ -29,6 +31,7 @@ require_one_of() {
 }
 
 require_command fnm "the fnm installer"
+require_command bun "the Bun installer"
 require_command herdr "the Herdr installer"
 require_command claude "the Claude Code installer"
 require_command agy "the Antigravity CLI installer"
