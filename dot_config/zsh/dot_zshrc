@@ -124,6 +124,14 @@ if [[ -r "$HOME/.zshrc.local" ]]; then
   }
 fi
 
+# Do not let WSL resolve Node tools from the Windows fnm/npm installations.
+if [[ -n "${WSL_DISTRO_NAME:-}" ]]; then
+  path=(${path:#*/AppData/Roaming/npm})
+  path=(${path:#*/AppData/Roaming/fnm/node-versions/*})
+  path=(${path:#*/AppData/Local/fnm_multishells/*})
+  rehash
+fi
+
 # Keep syntax highlighting last so it can wrap the final line editor widgets.
 source "$zsh_syntax_highlighting" || {
   print -u2 -- "Failed to load zsh-syntax-highlighting."
