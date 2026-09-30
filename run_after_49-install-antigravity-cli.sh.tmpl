@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ ! -r /etc/os-release ]]; then
+  echo "Cannot detect operating system; cannot install Antigravity CLI." >&2
+  exit 1
+fi
+
+. /etc/os-release
+if [[ "${ID:-}" != ubuntu ]]; then
+  echo "Antigravity CLI installation targets Ubuntu (found ${ID:-unknown}); refusing to continue." >&2
+  exit 1
+fi
+
+if ! command -v curl >/dev/null 2>&1; then
+  echo "curl is unavailable; cannot install Antigravity CLI." >&2
+  exit 1
+fi
+
+# Keep PATH management in the dotfiles instead of letting the vendor installer
+# edit shell startup files. The installer also upgrades an existing agy binary.
+curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --skip-aliases --skip-path
+
+agy_binary="$HOME/.local/bin/agy"
+if [[ ! -x "$agy_binary" ]]; then
+  echo "The Antigravity CLI installer did not create an executable at $agy_binary." >&2
+  exit 1
+fi

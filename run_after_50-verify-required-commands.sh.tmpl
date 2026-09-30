@@ -5,17 +5,17 @@ export PATH="$HOME/.local/bin:$PATH"
 
 require_command() {
   local command_name="$1"
-  local package_name="$2"
+  local expected_source="$2"
 
   if ! command -v "$command_name" >/dev/null 2>&1; then
-    echo "Required command '$command_name' is unavailable after installation; expected Ubuntu package '$package_name'." >&2
+    echo "Required command '$command_name' is unavailable after installation; expected '$expected_source'." >&2
     exit 1
   fi
 }
 
 require_one_of() {
   local command_names="$1"
-  local package_name="$2"
+  local expected_source="$2"
   shift 2
 
   for command_name in "$@"; do
@@ -24,13 +24,15 @@ require_one_of() {
     fi
   done
 
-  echo "Required command '$command_names' is unavailable after installation; expected Ubuntu package '$package_name'." >&2
+  echo "Required command '$command_names' is unavailable after installation; expected '$expected_source'." >&2
   exit 1
 }
 
 require_command fnm "the fnm installer"
 require_command herdr "the Herdr installer"
 require_command claude "the Claude Code installer"
+require_command agy "the Antigravity CLI installer"
+require_command obsidian "the Obsidian .deb package"
 require_command direnv direnv
 require_command zoxide zoxide
 require_command starship starship
