@@ -19,4 +19,9 @@ if ! "$fnm_binary" exec --using="$node_version" npm list --global --depth=0 @ope
   "$fnm_binary" exec --using="$node_version" npm install --global @openai/codex
 fi
 
+if ! "$fnm_binary" exec --using="$node_version" npm list --global --depth=0 pnpm >/dev/null 2>&1; then
+  "$fnm_binary" exec --using="$node_version" npm install --global pnpm
+fi
+
 "$fnm_binary" exec --using="$node_version" codex --version >/dev/null
+"$fnm_binary" exec --using="$node_version" pnpm --version >/dev/null

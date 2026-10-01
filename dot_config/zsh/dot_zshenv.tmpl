@@ -10,7 +10,7 @@ export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
 export PNPM_HOME="${PNPM_HOME:-$XDG_DATA_HOME/pnpm}"
 
 typeset -U path PATH
-path=("$HOME/.local/bin" "$BUN_INSTALL/bin" "$PNPM_HOME" "$XDG_DATA_HOME/gem/ruby/3.3.0/bin" "" $path)
+path=("$HOME/.local/bin" "$BUN_INSTALL/bin" "$PNPM_HOME/bin" "$PNPM_HOME" "$XDG_DATA_HOME/gem/ruby/3.3.0/bin" "" $path)
 
 # Zsh reads its remaining startup files from the XDG config directory.
 export ZDOTDIR="${ZDOTDIR:-$XDG_CONFIG_HOME/zsh}"

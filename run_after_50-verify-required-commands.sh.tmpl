@@ -31,6 +31,7 @@ require_one_of() {
 }
 
 require_command fnm "the fnm installer"
+require_command chezmoi "the chezmoi binary installer"
 require_command bun "the Bun installer"
 require_command herdr "the Herdr installer"
 require_command claude "the Claude Code installer"
@@ -44,3 +45,8 @@ require_command rg ripgrep
 require_command eza eza
 require_one_of "bat or batcat" bat bat batcat
 require_one_of "fd or fdfind" fd-find fd fdfind
+
+if ! "$HOME/.local/bin/fnm" exec --using=lts/latest pnpm --version >/dev/null 2>&1; then
+  echo "Required command 'pnpm' is unavailable under the latest Node.js LTS; expected the pnpm installer." >&2
+  exit 1
+fi

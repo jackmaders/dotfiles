@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+chezmoi_install_dir="$HOME/.local/bin"
+chezmoi_binary="$chezmoi_install_dir/chezmoi"
+
+if [[ -x "$chezmoi_binary" ]] && "$chezmoi_binary" --version >/dev/null 2>&1; then
+  exit 0
+fi
+
+if ! command -v curl >/dev/null 2>&1; then
+  echo "curl is unavailable; cannot install chezmoi." >&2
+  exit 1
+fi
+
+mkdir -p -- "$chezmoi_install_dir"
+curl -fsLS https://get.chezmoi.io | sh -s -- -b "$chezmoi_install_dir"
+
+if [[ ! -x "$chezmoi_binary" ]]; then
+  echo "The chezmoi installer did not create an executable at $chezmoi_binary." >&2
+  exit 1
+fi
+
+"$chezmoi_binary" --version >/dev/null

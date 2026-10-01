@@ -54,12 +54,13 @@ chezmoi --source "$PWD" diff
 chezmoi --source "$PWD" apply
 ```
 
-The apply step installs Ubuntu packages when the package list changes, ensures
-the pinned `fnm` release is installed in `~/.local/bin`, installs Bun with its
-official Linux installer, installs the latest Node.js LTS and makes it the
-`fnm` default, then installs Codex CLI with that Linux Node.js if it is not
-already installed for the LTS version. It then installs the latest stable
-Herdr release with its official Linux installer and Claude Code with
+The apply step installs Ubuntu packages when the package list changes, installs
+the latest chezmoi binary in `~/.local/bin` if it is missing, ensures the
+pinned `fnm` release is installed there, installs Bun with its official Linux
+installer, installs the latest Node.js LTS and makes it the `fnm` default, then
+installs Codex CLI and pnpm with that Linux Node.js if they are not already
+installed for the LTS version. It then installs the latest stable Herdr release
+with its official Linux installer and Claude Code with
 Anthropic's native Linux installer. It also installs
 Antigravity CLI with Google's Linux installer and Obsidian's official amd64
 Linux `.deb` package. The Obsidian package adds a WSLg desktop launcher.
@@ -91,12 +92,14 @@ Keep private keys and other secrets outside this repository.
 
 The APT list contains shared shell and CLI dependencies. `fnm` is installed
 from its pinned official release on each apply; a missing or mismatched version
-is installed or replaced. After installing packages, fnm, Bun, Herdr, Node.js,
-Codex, Claude Code, Antigravity CLI, and Obsidian, `chezmoi apply` checks that
-every required command is available and fails if one is missing. The fnm,
-Antigravity CLI, and Herdr executables are in `~/.local/bin`, while Bun is in
-`$BUN_INSTALL/bin` (default `~/.bun/bin`); `.zshenv` adds these locations to
-`PATH`. Antigravity CLI self-updates during normal use; Obsidian downloads the
+is installed or replaced. After installing packages and tools including fnm,
+Bun, Herdr, Node.js, chezmoi, Codex, pnpm, Claude Code, Antigravity CLI, and
+Obsidian, `chezmoi apply` checks that every required command is available and
+fails if one is missing. The chezmoi binary, fnm, Antigravity CLI, and Herdr
+executables are in `~/.local/bin`, which `.zshenv` adds to `PATH`; Bun is in
+`$BUN_INSTALL/bin` (default `~/.bun/bin`). pnpm is installed with the latest
+Node.js LTS managed by fnm; `PNPM_HOME` is added to `PATH` for pnpm's global
+packages. Antigravity CLI self-updates during normal use; Obsidian downloads the
 latest stable desktop release when `chezmoi apply` runs.
 `chezmoi apply` does not remove packages when a profile changes.
 
