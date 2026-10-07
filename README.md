@@ -38,6 +38,12 @@ Run chezmoi as your normal user, not with `sudo`. In particular, don't run the
 installer while your working directory is under `/mnt/c`: Windows-mounted
 directories may not support the `chmod` the installer uses. If you use the
 upstream installer, run it from your Linux home directory as your normal user.
+Pass `-b "$HOME/.local/bin"` so the binary lands in a directory already on
+this setup's `PATH`:
+
+```sh
+sh -c "$(curl -fsLS https://get.chezmoi.io)" -- -b "$HOME/.local/bin" init --apply jackmaders
+```
 
 On first initialization, chezmoi asks you to type `personal` or `twinkl` for
 the profile, then asks for the local Git identity values. These are stored in
