@@ -68,7 +68,8 @@ installs Codex CLI and pnpm with that Linux Node.js if they are not already
 installed for the LTS version. It then installs the latest stable Herdr release
 with its official Linux installer and Claude Code with
 Anthropic's native Linux installer. It also installs
-Antigravity CLI with Google's Linux installer and Obsidian's official amd64
+Antigravity CLI with Google's Linux installer, creates `~/.gemini/config` for
+Herdr's `antigravity-cli` integration, and installs Obsidian's official amd64
 Linux `.deb` package. The Obsidian package adds a WSLg desktop launcher.
 Claude Code manages its own updates after installation.
 The apply also creates `~/.ssh/id_ed25519` if it does not already exist, then

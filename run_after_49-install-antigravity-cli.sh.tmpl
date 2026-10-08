@@ -26,3 +26,6 @@ if [[ ! -x "$agy_binary" ]]; then
   echo "The Antigravity CLI installer did not create an executable at $agy_binary." >&2
   exit 1
 fi
+
+# Herdr requires this directory before installing its antigravity-cli hooks.
+mkdir -p "$HOME/.gemini/config"
