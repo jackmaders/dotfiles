@@ -20,7 +20,6 @@ packages:
       - git-delta
       - gh
       - just
-      - starship
       - zsh-autosuggestions
       - zsh-syntax-highlighting
     personal: []

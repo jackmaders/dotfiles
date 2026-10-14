@@ -26,12 +26,12 @@ interactive behavior in `.zshrc`.
 
 ## First run
 
-Install chezmoi and Git inside Ubuntu, then initialize this repo as the source
-directory. For example, from Ubuntu/WSL:
+Install Git and curl inside Ubuntu, then use the upstream chezmoi installer.
+Ubuntu 24.04 does not provide a chezmoi APT package. From Ubuntu/WSL:
 
 ```sh
 sudo apt update
-sudo apt install chezmoi git
+sudo apt install --yes git curl
 ```
 
 Run chezmoi as your normal user, not with `sudo`. In particular, don't run the
@@ -60,8 +60,10 @@ chezmoi --source "$PWD" diff
 chezmoi --source "$PWD" apply
 ```
 
-The apply step installs Ubuntu packages when the package list changes, installs
-the latest chezmoi binary in `~/.local/bin` if it is missing, ensures the
+The apply step installs Ubuntu packages when the package list changes, ensures
+Starship is available using its official installer (Ubuntu 24.04 has no Starship
+APT package), installs the latest chezmoi binary in `~/.local/bin` if it is
+missing, ensures the
 pinned `fnm` release is installed there, installs Bun with its official Linux
 installer, installs the latest Node.js LTS and makes it the `fnm` default, then
 installs Codex CLI and pnpm with that Linux Node.js if they are not already
@@ -97,10 +99,12 @@ using the generated `~/.ssh/id_ed25519.pub` key. Personal profile commits and
 tags are explicitly not signed.
 Keep private keys and other secrets outside this repository.
 
-The APT list contains shared shell and CLI dependencies. `fnm` is installed
+The APT list contains shared shell and CLI dependencies. Starship is installed
+in `~/.local/bin` when no working `starship` command is available; existing
+installations such as `/usr/local/bin/starship` are reused. `fnm` is installed
 from its pinned official release on each apply; a missing or mismatched version
 is installed or replaced. After installing packages and tools including fnm,
-Bun, Herdr, Node.js, chezmoi, Codex, pnpm, Claude Code, Antigravity CLI, and
+Bun, Herdr, Node.js, chezmoi, Starship, Codex, pnpm, Claude Code, Antigravity CLI, and
 Obsidian, `chezmoi apply` checks that every required command is available and
 fails if one is missing. The chezmoi binary, fnm, Antigravity CLI, and Herdr
 executables are in `~/.local/bin`, which `.zshenv` adds to `PATH`; Bun is in
