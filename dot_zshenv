@@ -1,6 +1,6 @@
 # Zsh uses ZDOTDIR to locate .zshenv before loading this file in child shells.
 # Bootstrap the configured startup directory, then load its environment setup.
-export ZDOTDIR="${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}"
+export ZDOTDIR="$HOME/.config/zsh"
 
 if [[ -r "$ZDOTDIR/.zshenv" ]]; then
   source "$ZDOTDIR/.zshenv" || return 1

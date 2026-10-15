@@ -1,130 +1,80 @@
 # Dotfiles
 
-This repository manages user configuration on Ubuntu in WSL with chezmoi.
-NixOS and Home Manager configuration has been replaced with Ubuntu package
-installation and normal dotfiles.
-
-## Layout
-
-```text
-chezmoi.toml.tmpl                 # First-run profile and Git identity prompts
-.chezmoidata/packages.yaml        # Ubuntu APT package list
-run_onchange_before_*.sh.tmpl     # Install APT packages when the list changes
-run_once_after_*.sh.tmpl          # One-time setup after files and packages
-run_after_*.sh.tmpl               # Validate/install required tools on each apply
-dot_zshenv.tmpl                  # Bootstrap the XDG Zsh startup directory
-dot_config/zsh/                  # Zsh environment, login, and interactive startup files
-dot_config/git/config.tmpl       # Shared Git settings and profile identity
-.chezmoitemplates/profile/       # Dynamically included personal/Twinkl settings
-dot_config/starship.toml.tmpl    # Shared prompt settings plus selected theme
-dot_config/zed/                  # Zed settings for the WSL-side Zed environment
-```
-
-Zsh reads `.zshenv` for every shell, `.zprofile` for login shells, and `.zshrc`
-for interactive shells. Keep `.zshenv` limited to quiet environment setup; put
-interactive behavior in `.zshrc`.
+Ubuntu in WSL dotfiles managed with chezmoi. Obsidian's official Debian package
+requires amd64; desktop applications use WSLg. Run chezmoi as your normal user.
 
 ## First run
 
-Install Git and curl inside Ubuntu, then use the upstream chezmoi installer.
-Ubuntu 24.04 does not provide a chezmoi APT package. From Ubuntu/WSL:
+Install Git and curl, then install chezmoi into `~/.local/bin`. This is the
+supported bootstrap location; the dotfiles do not install chezmoi themselves.
+Run the installer from your Linux home directory, where executable permissions
+are supported:
 
 ```sh
 sudo apt update
 sudo apt install --yes git curl
+cd "$HOME"
+sh -c "$(curl -fsLS https://get.chezmoi.io)" -- -b "$HOME/.local/bin" init jackmaders
+"$HOME/.local/bin/chezmoi" diff
+"$HOME/.local/bin/chezmoi" apply
 ```
 
-Run chezmoi as your normal user, not with `sudo`. In particular, don't run the
-installer while your working directory is under `/mnt/c`: Windows-mounted
-directories may not support the `chmod` the installer uses. If you use the
-upstream installer, run it from your Linux home directory as your normal user.
-Pass `-b "$HOME/.local/bin"` so the binary lands in a directory already on
-this setup's `PATH`:
+Initialization prompts for `personal` or `twinkl`, a Git author name, and an
+email address. These values live in `~/.config/chezmoi/chezmoi.toml`, outside
+the repository. To use an existing checkout instead, run
+`~/.local/bin/chezmoi --source "$PWD" init`, then `diff` and `apply` with the
+same `--source` argument.
 
-```sh
-sh -c "$(curl -fsLS https://get.chezmoi.io)" -- -b "$HOME/.local/bin" init --apply jackmaders
-```
-
-On first initialization, chezmoi asks you to type `personal` or `twinkl` for
-the profile, then asks for the local Git identity values. These are stored in
-the machine-local chezmoi config, not in this repo.
-
-```sh
-chezmoi --source "$PWD" init
-```
-
-Review the plan before applying it:
-
-```sh
-chezmoi --source "$PWD" diff
-chezmoi --source "$PWD" apply
-```
-
-The apply step installs Ubuntu packages when the package list changes, ensures
-Starship is available using its official installer (Ubuntu 24.04 has no Starship
-APT package), installs the latest chezmoi binary in `~/.local/bin` if it is
-missing, ensures the
-pinned `fnm` release is installed there, installs Bun with its official Linux
-installer, installs the latest Node.js LTS and makes it the `fnm` default, then
-installs Codex CLI and pnpm with that Linux Node.js if they are not already
-installed for the LTS version. It then installs the latest stable Herdr release
-with its official Linux installer and Claude Code with
-Anthropic's native Linux installer. It also installs
-Antigravity CLI with Google's Linux installer, creates `~/.gemini/config` for
-Herdr's `antigravity-cli` integration, and installs Obsidian's official amd64
-Linux `.deb` package. The Obsidian package adds a WSLg desktop launcher.
-Claude Code manages its own updates after installation.
-The apply also creates `~/.ssh/id_ed25519` if it does not already exist, then
-sets Zsh as the user's login shell once. `ssh-keygen` asks for a passphrase;
-`sudo` is used for APT and `chsh`. APT or setup failures stop the apply instead
-of being skipped. Open a new WSL session after apply for the default shell
-change to take effect.
-
-To use the new SSH key with GitHub, run:
+Apply installs APT packages, creates development and vault directories, creates
+`~/.ssh/id_ed25519` if neither key file exists, and sets Zsh as the login shell.
+`ssh-keygen` asks for a passphrase; APT and `chsh` use `sudo`. Existing private
+keys are preserved. An orphan public key stops setup with recovery instructions.
+Open a new WSL session for the login-shell change to take effect. To authenticate
+with GitHub and upload the generated public key, run:
 
 ```sh
 gh auth login --git-protocol ssh
 ```
 
-Follow the prompts to authenticate and upload the generated public key.
+## Layout and lifecycle
 
-## Profiles
+```text
+.chezmoi.toml.tmpl                         # Local profile and Git identity prompts
+.chezmoiexternal.toml                      # Pinned fnm binary and fzf-tab plugin
+run_onchange_before_10-install-apt-packages.sh # Shared Ubuntu packages
+run_once_after_20-bootstrap.sh.tmpl        # Directories, SSH key, login shell
+run_after_40-install-tools.sh              # Install and verify tools on each apply
+dot_zshenv                                # Bootstrap ~/.config/zsh
+dot_config/zsh/                           # Environment and interactive startup
+dot_config/git/config.tmpl                # Git settings, identity, signing
+dot_config/starship.toml.tmpl              # Prompt and profile colors
+dot_config/gh/config.yml                  # GitHub CLI preferences
+```
 
-The local file `~/.config/chezmoi/chezmoi.toml` contains `data.profile`,
-`data.gitName`, and `data.gitEmail`. Set `data.profile` to `personal` or
-`twinkl`; templates dynamically include the matching files from
-`.chezmoitemplates/profile/` for Git, Starship, and profile-specific directory
-setup. Git commit and tag signing are enabled only for the Twinkl profile,
-using the generated `~/.ssh/id_ed25519.pub` key. Personal profile commits and
-tags are explicitly not signed.
-Keep private keys and other secrets outside this repository.
+APT runs when its script contents change. Bootstrap runs once for each unique
+rendered version of its contents: editing it or selecting a new profile can run
+it again, while returning to a previously applied version skips it. Its guards
+preserve existing keys and avoid changing an already selected login shell.
+Failures stop apply. Packages and directories are not removed on profile changes.
 
-The APT list contains shared shell and CLI dependencies. Starship is installed
-in `~/.local/bin` when no working `starship` command is available; existing
-installations such as `/usr/local/bin/starship` are reused. `fnm` is installed
-from its pinned official release on each apply; a missing or mismatched version
-is installed or replaced. After installing packages and tools including fnm,
-Bun, Herdr, Node.js, chezmoi, Starship, Codex, pnpm, Claude Code, Antigravity CLI, and
-Obsidian, `chezmoi apply` checks that every required command is available and
-fails if one is missing. The chezmoi binary, fnm, Antigravity CLI, and Herdr
-executables are in `~/.local/bin`, which `.zshenv` adds to `PATH`; Bun is in
-`$BUN_INSTALL/bin` (default `~/.bun/bin`). pnpm is installed with the latest
-Node.js LTS managed by fnm; `PNPM_HOME` is added to `PATH` for pnpm's global
-packages. Antigravity CLI self-updates during normal use; Obsidian downloads the
-latest stable desktop release when `chezmoi apply` runs.
-`chezmoi apply` does not remove packages when a profile changes.
+Every apply installs the latest Node.js LTS and selects it as fnm's default,
+ensures Codex and pnpm are installed for that Node version, and checks required
+commands. It also installs Starship, Bun, and Claude Code when missing, runs the
+Herdr and Antigravity CLI installers, and installs the latest stable Obsidian
+desktop package. fnm stays pinned to the version in the external manifest.
+Claude Code and Antigravity CLI also manage updates during normal use.
 
-The config leaves WSLg-provided display and runtime variables to WSL instead of
-hard-coding the old NixOS values.
+## Profiles and paths
 
-## Zed in WSL
+Set `data.profile` to `personal` or `twinkl` in the local chezmoi config, then
+apply. Profiles select prompt colors, `~/dev/personal` or `~/dev/twinkl`, and Git
+signing. Twinkl signs commits and tags with `~/.ssh/id_ed25519.pub`; personal
+disables signing. `data.gitName` and `data.gitEmail` set the author identity.
+Keep private keys and secrets outside this repository.
 
-`dot_config/zed` manages the Linux-side Zed user configuration under
-`~/.config/zed`. It is suitable for language-server, task, and debug settings
-that use tools installed in Ubuntu. Zed's Windows UI preferences live in the
-Windows user profile; manage those from Windows if you want them versioned too.
-
-The archive's Godot debug entry is rendered only when `data.godotPath` is set in
-the local chezmoi config. The C# language server, .NET task, and debugger must
-also be installed inside Ubuntu. Project-only Zed settings can stay in a
-project's `.zed/` directory.
+This setup uses the standard XDG locations `~/.config` and `~/.local/share`;
+custom `XDG_CONFIG_HOME` and `XDG_DATA_HOME` values are unsupported. Zsh reads
+`.zshenv` for every shell and `.zshrc` for interactive shells.
+Its environment adds `~/.local/bin`, `$BUN_INSTALL/bin`
+(default `~/.bun/bin`), and `$PNPM_HOME` (default `~/.local/share/pnpm`) to PATH.
+WSL supplies display and runtime variables.

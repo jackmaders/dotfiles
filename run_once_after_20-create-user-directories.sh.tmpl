@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-
-mkdir -p \
-  "$HOME/dev/sandbox" \
-  "$HOME/dev/github.com" \
-  "$HOME/vaults"
-
-{{ includeTemplate (printf "profile/%s/directories.sh" .profile) . }}

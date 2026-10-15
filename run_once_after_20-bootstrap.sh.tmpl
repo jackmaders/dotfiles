@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+mkdir -p "$HOME/dev/sandbox" "$HOME/dev/github.com" \
+  "$HOME/dev/{{ .profile }}" "$HOME/vaults"
+
+. /etc/os-release
+if [[ "${ID:-}" != ubuntu ]]; then
+  echo "Bootstrap targets Ubuntu (found ${ID:-unknown}); refusing to continue." >&2
+  exit 1
+fi
+
+key_path="$HOME/.ssh/id_ed25519"
+mkdir -p "$HOME/.ssh"
+chmod 700 "$HOME/.ssh"
+if [[ -e "$key_path" || -L "$key_path" ]]; then
+  echo "Keeping existing SSH private key at $key_path."
+elif [[ -e "$key_path.pub" || -L "$key_path.pub" ]]; then
+  echo "Found $key_path.pub without its private key. Restore the matching private key or move the orphan public key aside, then apply again; no key files were overwritten." >&2
+  exit 1
+else
+  ssh-keygen -t ed25519 -C "$USER@$(hostname)" -f "$key_path"
+fi
+
+zsh_path="$(command -v zsh)"
+current_shell="$(getent passwd "$USER" | cut -d: -f7)"
+if [[ "$current_shell" != "$zsh_path" ]]; then
+  sudo chsh -s "$zsh_path" "$USER"
+fi

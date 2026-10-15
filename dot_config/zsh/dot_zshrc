@@ -1,27 +1,9 @@
 # Interactive shell configuration.
-[[ -o interactive ]] || return
-
-require_file() {
-  local file_path="$1"
-
-  if [[ ! -r "$file_path" ]]; then
-    print -u2 -- "Required shell integration is missing or unreadable: $file_path"
-    return 1
-  fi
-}
-
-fzf_tab_plugin="$XDG_DATA_HOME/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
+fzf_tab_plugin="$HOME/.local/share/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh"
 zsh_autosuggestions=/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 fzf_key_bindings=/usr/share/doc/fzf/examples/key-bindings.zsh
 fzf_completion=/usr/share/doc/fzf/examples/completion.zsh
 zsh_syntax_highlighting=/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
-require_file "$fzf_tab_plugin" || return 1
-require_file "$zsh_autosuggestions" || return 1
-require_file "$fzf_key_bindings" || return 1
-require_file "$fzf_completion" || return 1
-require_file "$zsh_syntax_highlighting" || return 1
-unfunction require_file
 
 setopt interactivecomments
 
@@ -67,12 +49,12 @@ source "$zsh_autosuggestions" || { print -u2 -- "Failed to load zsh-autosuggesti
 source "$fzf_key_bindings" || { print -u2 -- "Failed to load fzf key bindings."; return 1; }
 source "$fzf_completion" || { print -u2 -- "Failed to load fzf completion."; return 1; }
 
-_dotfiles_fnm_env="$(fnm env --use-on-cd --shell zsh)" || {
-  print -u2 -- "Failed to initialize fnm."
-  return 1
+_dotfiles_init() {
+  local init_code
+  init_code="$("$@")" || { print -u2 -- "Failed to initialize $1."; return 1; }
+  eval "$init_code" || { print -u2 -- "Failed to apply $1 initialization."; return 1; }
 }
-eval "$_dotfiles_fnm_env" || { print -u2 -- "Failed to apply fnm environment."; return 1; }
-unset _dotfiles_fnm_env
+_dotfiles_init fnm env --use-on-cd --shell zsh || return 1
 
 # Load the environment created by the Vite+ installer when available.
 if [[ -r "$HOME/.config/vite-plus/env" ]]; then
@@ -82,27 +64,12 @@ if [[ -r "$HOME/.config/vite-plus/env" ]]; then
   }
 fi
 
-_dotfiles_direnv_hook="$(direnv hook zsh)" || {
-  print -u2 -- "Failed to initialize direnv."
-  return 1
-}
-eval "$_dotfiles_direnv_hook" || { print -u2 -- "Failed to apply direnv hook."; return 1; }
-unset _dotfiles_direnv_hook
-
-_dotfiles_zoxide_init="$(zoxide init zsh)" || {
-  print -u2 -- "Failed to initialize zoxide."
-  return 1
-}
-eval "$_dotfiles_zoxide_init" || { print -u2 -- "Failed to apply zoxide initialization."; return 1; }
-unset _dotfiles_zoxide_init
+_dotfiles_init direnv hook zsh || return 1
+_dotfiles_init zoxide init zsh || return 1
 alias cd=z
 
-_dotfiles_starship_init="$(starship init zsh)" || {
-  print -u2 -- "Failed to initialize Starship."
-  return 1
-}
-eval "$_dotfiles_starship_init" || { print -u2 -- "Failed to apply Starship initialization."; return 1; }
-unset _dotfiles_starship_init
+_dotfiles_init starship init zsh || return 1
+unfunction _dotfiles_init
 
 # Preserve the old shortcuts while accounting for Ubuntu binary names.
 alias c='clear'

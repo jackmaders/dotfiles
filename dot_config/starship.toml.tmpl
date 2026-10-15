@@ -1,3 +1,15 @@
+{{- $muted := "#5c6370" -}}
+{{- $directory := "#61afef" -}}
+{{- $success := "#c678dd" -}}
+{{- $error := "#e06c75" -}}
+{{- $vim := "#98c379" -}}
+{{- if eq .profile "twinkl" -}}
+{{- $muted = "#657b83" -}}
+{{- $directory = "#268bd2" -}}
+{{- $success = "#2aa198" -}}
+{{- $error = "#dc322f" -}}
+{{- $vim = "#859900" -}}
+{{- end -}}
 format = "$directory$git_branch$git_status$character"
 right_format = "$time"
 
@@ -5,4 +17,20 @@ right_format = "$time"
 disabled = false
 format = "[$time]($style)"
 time_format = "%R"
-{{ includeTemplate (printf "profile/%s/starship.toml" .profile) . }}
+style = "{{ $muted }}"
+
+[directory]
+style = "bold {{ $directory }}"
+
+[character]
+success_symbol = "[❯](bold {{ $success }})"
+error_symbol = "[❯](bold {{ $error }})"
+vimcmd_symbol = "[❮](bold {{ $vim }})"
+
+[git_branch]
+format = "[$branch]($style) "
+style = "bold {{ $muted }}"
+
+[git_status]
+format = "([$all_status$ahead_behind]($style) )"
+style = "bold {{ $error }}"

@@ -13,12 +13,12 @@ if [[ "${ID:-}" != ubuntu ]]; then
 fi
 
 packages=(
-{{- range .packages.ubuntu.common }}
-  {{ . | quote }}
-{{- end }}
-{{- range index .packages.ubuntu .profile }}
-  {{ . | quote }}
-{{- end }}
+  zsh git git-lfs openssh-client
+  curl wget unzip vim
+  ncurses-bin ripgrep fd-find bat
+  fzf direnv eza zoxide
+  git-delta gh just zsh-autosuggestions
+  zsh-syntax-highlighting
 )
 
 if (( EUID == 0 )); then

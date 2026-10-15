@@ -1,3 +1,2 @@
-# Repository documentation and Git metadata are not home-directory dotfiles.
+# Repository documentation is not a home-directory dotfile.
 README.md
-.gitignore
