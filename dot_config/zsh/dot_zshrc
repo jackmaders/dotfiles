@@ -74,6 +74,14 @@ _dotfiles_fnm_env="$(fnm env --use-on-cd --shell zsh)" || {
 eval "$_dotfiles_fnm_env" || { print -u2 -- "Failed to apply fnm environment."; return 1; }
 unset _dotfiles_fnm_env
 
+# Load the environment created by the Vite+ installer when available.
+if [[ -r "$HOME/.config/vite-plus/env" ]]; then
+  source "$HOME/.config/vite-plus/env" || {
+    print -u2 -- "Failed to load Vite+ environment."
+    return 1
+  }
+fi
+
 _dotfiles_direnv_hook="$(direnv hook zsh)" || {
   print -u2 -- "Failed to initialize direnv."
   return 1
