@@ -54,11 +54,9 @@ _dotfiles_init() {
   init_code="$("$@")" || { print -u2 -- "Failed to initialize $1."; return 1; }
   eval "$init_code" || { print -u2 -- "Failed to apply $1 initialization."; return 1; }
 }
-_dotfiles_init fnm env --use-on-cd --shell zsh || return 1
-
-# Load the environment created by the Vite+ installer when available.
-if [[ -r "$HOME/.config/vite-plus/env" ]]; then
-  source "$HOME/.config/vite-plus/env" || {
+# Reload after compinit to register Vite+ completions.
+if [[ -r "${VP_HOME:-$XDG_CONFIG_HOME/vite-plus}/env" ]]; then
+  source "${VP_HOME:-$XDG_CONFIG_HOME/vite-plus}/env" || {
     print -u2 -- "Failed to load Vite+ environment."
     return 1
   }

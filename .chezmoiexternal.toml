@@ -1,14 +1,4 @@
-{{- $fnmAsset := index (dict "amd64" "fnm-linux" "arm64" "fnm-arm64" "arm" "fnm-arm32") .chezmoi.arch -}}
-{{- if or (ne .chezmoi.os "linux") (not $fnmAsset) -}}
-{{- fail "fnm requires a supported Ubuntu architecture (amd64, arm64, or arm)" -}}
-{{- end -}}
 [".local/share/zsh/plugins/fzf-tab"]
 type = "archive"
 url = "https://github.com/Aloxaf/fzf-tab/archive/refs/tags/v1.3.0.tar.gz"
 stripComponents = 1
-
-[".local/bin/fnm"]
-type = "archive-file"
-url = "https://github.com/Schniz/fnm/releases/download/v1.39.0/{{ $fnmAsset }}.zip"
-path = "fnm"
-executable = true

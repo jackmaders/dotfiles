@@ -37,52 +37,31 @@ fi
   "$starship_binary" --version >/dev/null
 )
 
-# fnm is supplied by the pinned executable archive in .chezmoiexternal.toml.
-fnm_binary="$HOME/.local/bin/fnm"
-if [[ ! -x "$fnm_binary" ]] || [[ "$("$fnm_binary" --version)" != "fnm 1.39.0" ]]; then
-  echo "Expected fnm 1.39.0 at $fnm_binary." >&2
-  exit 1
-fi
-
-# Node.js, Codex, and pnpm
+# Vite+ manages Node.js and package managers, including pnpm and Bun.
 (
-  export PATH="$HOME/.local/bin:$PATH"
-
-  # Keep the latest LTS installed and use it as the default Node.js version.
-  "$fnm_binary" install --lts
-  node_version="$("$fnm_binary" exec --using=lts/latest node -p 'process.versions.node')"
-  "$fnm_binary" default "$node_version"
-
-  # Run npm through fnm so a Windows Node on the WSL PATH cannot own this install.
-  if ! "$fnm_binary" exec --using="$node_version" npm list --global --depth=0 @openai/codex >/dev/null 2>&1; then
-    "$fnm_binary" exec --using="$node_version" npm install --global @openai/codex
+  vp_binary="${VP_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/vite-plus}/bin/vp"
+  if [[ ! -x "$vp_binary" ]] || ! "$vp_binary" --version >/dev/null 2>&1; then
+    curl -fsSL https://vite.plus | VP_NODE_MANAGER=yes bash
   fi
 
-  if ! "$fnm_binary" exec --using="$node_version" npm list --global --depth=0 pnpm >/dev/null 2>&1; then
-    "$fnm_binary" exec --using="$node_version" npm install --global pnpm
-  fi
-
-  "$fnm_binary" exec --using="$node_version" codex --version >/dev/null
-  "$fnm_binary" exec --using="$node_version" pnpm --version >/dev/null
-)
-
-# Bun
-(
-  bun_install_dir="${BUN_INSTALL:-$HOME/.bun}"
-  bun_binary="$bun_install_dir/bin/bun"
-  if [[ -x "$bun_binary" ]] && "$bun_binary" --version >/dev/null 2>&1; then
-    exit 0
-  fi
-
-  export BUN_INSTALL="$bun_install_dir"
-  curl -fsSL https://bun.sh/install | bash
-
-  if [[ ! -x "$bun_binary" ]]; then
-    echo "The Bun installer did not create an executable at $bun_binary." >&2
+  vp_env="${VP_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/vite-plus}/env"
+  if [[ ! -x "$vp_binary" ]] || [[ ! -r "$vp_env" ]]; then
+    echo "The Vite+ installer did not create $vp_binary and $vp_env." >&2
     exit 1
   fi
+  source "$vp_env"
 
-  "$bun_binary" --version >/dev/null
+  # Keep the latest LTS as the default; project versions resolve through shims.
+  "$vp_binary" env on
+  "$vp_binary" env install lts
+  "$vp_binary" env default lts
+
+  # Global packages live in Vite+, independently of fnm and system npm.
+  if [[ ! -x "${vp_binary%/vp}/codex" ]] || ! "${vp_binary%/vp}/codex" --version >/dev/null 2>&1; then
+    "$vp_binary" install --global --node lts @openai/codex
+  fi
+
+  "${vp_binary%/vp}/codex" --version >/dev/null
 )
 
 # Herdr
@@ -183,9 +162,9 @@ fi
 )
 
 # Verify command discovery on every apply, even when APT's list is unchanged.
-export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
-export PATH="$BUN_INSTALL/bin:$HOME/.local/bin:$PATH"
-for required_command in fnm chezmoi bun herdr claude agy obsidian direnv zoxide starship clear rg eza; do
+source "${VP_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/vite-plus}/env"
+export PATH="$HOME/.local/bin:$PATH"
+for required_command in vp node codex chezmoi herdr claude agy obsidian direnv zoxide starship clear rg eza; do
   if ! command -v "$required_command" >/dev/null 2>&1; then
     echo "Required command '$required_command' is unavailable after installation." >&2
     exit 1

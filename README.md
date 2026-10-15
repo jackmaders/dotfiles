@@ -40,7 +40,7 @@ gh auth login --git-protocol ssh
 
 ```text
 .chezmoi.toml.tmpl                         # Local profile and Git identity prompts
-.chezmoiexternal.toml                      # Pinned fnm binary and fzf-tab plugin
+.chezmoiexternal.toml                      # Pinned fzf-tab plugin
 run_onchange_before_10-install-apt-packages.sh # Shared Ubuntu packages
 run_once_after_20-bootstrap.sh.tmpl        # Directories, SSH key, login shell
 run_after_40-install-tools.sh              # Install and verify tools on each apply
@@ -57,11 +57,13 @@ it again, while returning to a previously applied version skips it. Its guards
 preserve existing keys and avoid changing an already selected login shell.
 Failures stop apply. Packages and directories are not removed on profile changes.
 
-Every apply installs the latest Node.js LTS and selects it as fnm's default,
-ensures Codex and pnpm are installed for that Node version, and checks required
-commands. It also installs Starship, Bun, and Claude Code when missing, runs the
-Herdr and Antigravity CLI installers, and installs the latest stable Obsidian
-desktop package. fnm stays pinned to the version in the external manifest.
+Every apply ensures Vite+ is installed, enables its runtime and package-manager
+management, installs the latest Node.js LTS as its default, ensures Codex is
+installed through `vp install --global`, and checks required commands. Vite+
+manages npm, pnpm, Yarn, and Bun through shims; separate fnm, pnpm, and Bun
+installations are unnecessary. It also installs Starship and Claude Code when
+missing, runs the Herdr and Antigravity CLI installers, and installs the latest
+stable Obsidian desktop package.
 Claude Code and Antigravity CLI also manage updates during normal use.
 
 ## Profiles and paths
@@ -75,6 +77,6 @@ Keep private keys and secrets outside this repository.
 This setup uses the standard XDG locations `~/.config` and `~/.local/share`;
 custom `XDG_CONFIG_HOME` and `XDG_DATA_HOME` values are unsupported. Zsh reads
 `.zshenv` for every shell and `.zshrc` for interactive shells.
-Its environment adds `~/.local/bin`, `$BUN_INSTALL/bin`
-(default `~/.bun/bin`), and `$PNPM_HOME` (default `~/.local/share/pnpm`) to PATH.
+Its environment adds `~/.local/bin` to PATH and loads the Vite+ environment for
+managed runtimes, package managers, and global packages in every shell.
 WSL supplies display and runtime variables.
