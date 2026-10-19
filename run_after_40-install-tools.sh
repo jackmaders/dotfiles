@@ -108,6 +108,23 @@ fi
   mkdir -p "$HOME/.gemini/config"
 )
 
+# Hunk
+(
+  export HUNK_NO_MODIFY_PATH=1
+  curl -fsSL https://hunk.dev/install.sh | sh
+
+  hunk_binary="$HOME/.hunk/bin/hunk"
+  if [[ ! -x "$hunk_binary" ]]; then
+    echo "The Hunk installer did not create an executable at $hunk_binary." >&2
+    exit 1
+  fi
+
+  mkdir -p "$HOME/.local/bin"
+  ln -sf "$hunk_binary" "$HOME/.local/bin/hunk"
+
+  "$HOME/.local/bin/hunk" --version >/dev/null
+)
+
 # Obsidian
 (
   case "$(dpkg --print-architecture)" in
@@ -163,8 +180,8 @@ fi
 
 # Verify command discovery on every apply, even when APT's list is unchanged.
 source "${VP_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/vite-plus}/env"
-export PATH="$HOME/.local/bin:$PATH"
-for required_command in vp node codex chezmoi herdr claude agy obsidian direnv zoxide starship clear rg eza; do
+export PATH="$HOME/.hunk/bin:$HOME/.local/bin:$PATH"
+for required_command in vp node codex chezmoi herdr claude agy hunk obsidian direnv zoxide starship clear rg eza; do
   if ! command -v "$required_command" >/dev/null 2>&1; then
     echo "Required command '$required_command' is unavailable after installation." >&2
     exit 1

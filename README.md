@@ -62,9 +62,9 @@ management, installs the latest Node.js LTS as its default, ensures Codex is
 installed through `vp install --global`, and checks required commands. Vite+
 manages npm, pnpm, Yarn, and Bun through shims; separate fnm, pnpm, and Bun
 installations are unnecessary. It also installs Starship and Claude Code when
-missing, runs the Herdr and Antigravity CLI installers, and installs the latest
+missing, runs the Herdr, Antigravity CLI, and Hunk installers, and installs the latest
 stable Obsidian desktop package.
-Claude Code and Antigravity CLI also manage updates during normal use.
+Claude Code, Antigravity CLI, and Hunk also manage updates during normal use.
 
 ## Profiles and paths
 
@@ -77,6 +77,6 @@ Keep private keys and secrets outside this repository.
 This setup uses the standard XDG locations `~/.config` and `~/.local/share`;
 custom `XDG_CONFIG_HOME` and `XDG_DATA_HOME` values are unsupported. Zsh reads
 `.zshenv` for every shell and `.zshrc` for interactive shells.
-Its environment adds `~/.local/bin` to PATH and loads the Vite+ environment for
+Its environment adds `~/.local/bin` and `~/.hunk/bin` to PATH and loads the Vite+ environment for
 managed runtimes, package managers, and global packages in every shell.
 WSL supplies display and runtime variables.
